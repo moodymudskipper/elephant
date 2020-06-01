@@ -92,7 +92,7 @@ list_calves <- function(x, ...) {
   if(...length() == 0)
     return(out)
   else{
-    do.call("calves", c(list(x=out[[..1]]), list(...)[-1]))
+    do.call("list_calves", c(list(x=out[[..1]]), list(...)[-1]))
   }
 }
 
