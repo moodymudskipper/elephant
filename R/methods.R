@@ -3,9 +3,7 @@
 
 #' @export
 Math.elephant <- function(x, ...){
-  class(x) <- setdiff(class(x), "elephant")
-  attr(x, "elephant") <- NULL
-  attr(x, "calves") <- NULL
+  x <- forget(x)
   NextMethod()
 }
 
