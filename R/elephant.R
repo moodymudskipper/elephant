@@ -34,7 +34,10 @@ print.elephant <- function(x, ...) {
 }
 
 rec_print <- function(x, ident = 0){
-  cat(strrep(" ", ident), deparse(attr(x, "elephant")),"\n")
+  deparsed <- deparse(attr(x, "elephant"))
+  # deal with `{` calls
+  deparsed <- gsub("^[ ]+([^ ]*)$","\\1;", deparsed)
+  cat(strrep(" ", ident), deparsed,"\n")
   if(length(attr(x, "calves")))
     lapply(attr(x, "calves"), rec_print, ident + 2)
   invisible()
