@@ -27,8 +27,8 @@ forget <- function(x) {
 #' @inheritParams base::print
 #'
 #' @export
-print.elephant <- function(x, ...) {
-  print(forget(x))
+print.elephant <- function(x, ..., print.value = TRUE) {
+  if(print.value) print(forget(x))
   rec_print(x)
   invisible(x)
 }
