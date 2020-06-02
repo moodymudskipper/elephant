@@ -22,7 +22,6 @@ remotes::install_github("moodymudskipper/elephant")
 
 ``` r
 library(elephant)
-## basic example code
 ```
 
 We build an elephant object by using `:=`
@@ -86,3 +85,48 @@ baz <- forget(x)
 baz
 #> [1] 2
 ```
+
+We can access the variables used to compute our elephant object by using
+`list_calves()` or `calf()`.
+
+``` r
+list_calves(foo)
+#> $x
+#> [1] 2
+#>  x <- x * 2 
+#>    x <- 1 
+#> 
+#> $z
+#> [1] 4
+#>  z <- x + y 
+#>    x <- 1 
+#>    y <- 3
+list_calves(foo, "z")
+#> $x
+#> [1] 1
+#>  x <- 1 
+#> 
+#> $y
+#> [1] 3
+#>  y <- 3
+calf(foo, "z")
+#> [1] 4
+#>  z <- x + y 
+#>    x <- 1 
+#>    y <- 3
+calf(foo, "z", "x")
+#> [1] 1
+#>  x <- 1
+```
+
+## Debugging with *elephant*
+
+  - Use `:=` in the expressions you want to keep track of
+  - Add a `browser()` call right after the definition of the object
+    you’re unsure about (use `:=` to define this one as well)
+  - Call your function and inspect the object with `calf()` or
+    `list_calves()`
+
+This way you might not need to clutter your code outside of the area
+where you spotted an unexpected behavior, apart from the `:=` which is
+easy to replace with `<-` once your function works as expected.
