@@ -4,12 +4,14 @@
 \alias{print.elephant}
 \title{Print elephant object}
 \usage{
-\method{print}{elephant}(x, ...)
+\method{print}{elephant}(x, ..., print.value = TRUE)
 }
 \arguments{
 \item{x}{an object used to select a method.}
 
 \item{...}{further arguments passed to or from other methods.}
+
+\item{print.value}{if \code{FALSE} only the elephant's memory is printed.}
 }
 \description{
 Print elephant object.
