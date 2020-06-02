@@ -5,3 +5,5 @@
 * Better printing of expressions containing calls to `{`
 * Added an argument `print.value = TRUE` to `print.elephant`, set to `FALSE` to
 print only the elephant's memory.
+* Inlclude non-elephant values in memory
+* Added function `poach()` to debug failing calls

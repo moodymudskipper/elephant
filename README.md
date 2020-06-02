@@ -135,27 +135,28 @@ test <- function(){
   y := 3
   z := x * 2
   bar <- x + y + z
-  foo := x + sqrt(z) + bar * "a" # <- problematic call!
+  foo := x + sqrt(z) + bar * letters # <- problematic call!
 }
 
 test()
-#> Elephant was killed in foo := x + sqrt(z) + bar * "a"
+#> Elephant was killed in foo := x + sqrt(z) + bar * letters
 #> Use poach() to collect its memory
-#> Error in bar * "a": non-numeric argument to binary operator
+#> Error in bar * letters: non-numeric argument to binary operator
 
 poach()
 #> [1] NA
-#>  foo <- x + sqrt(z) + bar * "a" # logical, value: NA 
+#>  foo <- x + sqrt(z) + bar * letters # logical, value: NA 
 #>    x <- 1 # numeric, value: 1 
 #>    z <- x * 2 # numeric, value: 2 
 #>      x <- 1 # numeric, value: 1 
-#>    bar # numeric, value: 6
+#>    bar # numeric, value: 6 
+#>    letters # character, length: 26
 
 # extract the bar variable as used by foo, for further investigation
 foo_poached <- poach()
-bar <- calf(foo_poached, "bar")
-bar
-#> [1] 6
+calf(foo_poached, "letters")
+#>  [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s"
+#> [20] "t" "u" "v" "w" "x" "y" "z"
 
 # we can go deeper
 calf(foo_poached, "z", "x")
@@ -176,8 +177,8 @@ bench::mark(
 #> # A tibble: 2 x 6
 #>   expression               min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>          <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 elephant_assignment   60.6us   71.7us    13168.        0B     16.5
-#> 2 standard_assignment     28us     33us    28670.        0B     20.1
+#> 1 elephant_assignment     59us   65.9us    14454.        0B     18.6
+#> 2 standard_assignment   27.9us   31.6us    29790.        0B     17.9
 ```
 
 However it wouldn’t not be well advised, nor really that useful, to use
