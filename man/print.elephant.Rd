@@ -4,10 +4,12 @@
 \alias{print.elephant}
 \title{Print elephant object}
 \usage{
-\method{print}{elephant}(x)
+\method{print}{elephant}(x, ...)
 }
 \arguments{
-\item{x}{object}
+\item{x}{an object used to select a method.}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \description{
 Print elephant object.

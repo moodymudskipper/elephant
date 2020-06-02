@@ -16,11 +16,11 @@
 \usage{
 \method{Math}{elephant}(x, ...)
 
-\method{Ops}{elephant}(x, ...)
+\method{Ops}{elephant}(e1, e2)
 
-\method{Complex}{elephant}(x, ...)
+\method{Complex}{elephant}(z)
 
-\method{Summary}{elephant}(x, ...)
+\method{Summary}{elephant}(x, ..., na.rm = FALSE)
 
 \method{+}{elephant}(e1, e2)
 
@@ -37,13 +37,17 @@
 \method{\%/\%}{elephant}(e1, e2)
 }
 \arguments{
-\item{x}{object}
+\item{x}{objects.}
 
-\item{...}{passed to other methods}
+\item{...}{further arguments passed to methods.}
 
-\item{e1}{object}
+\item{e1}{objects.}
 
-\item{e2}{object}
+\item{e2}{objects.}
+
+\item{z}{objects.}
+
+\item{na.rm}{logical: should missing values be removed?}
 }
 \description{
 methods for class 'elephant'

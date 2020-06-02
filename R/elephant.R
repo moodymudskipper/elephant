@@ -24,10 +24,10 @@ forget <- function(x) {
 #' Print elephant object
 #'
 #' Print elephant object.
-#' @param x object
+#' @inheritParams base::print
 #'
 #' @export
-print.elephant <- function(x) {
+print.elephant <- function(x, ...) {
   print(forget(x))
   rec_print(x)
   invisible(x)

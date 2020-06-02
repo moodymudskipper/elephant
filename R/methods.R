@@ -2,10 +2,7 @@
 # which would preserve class and attributes
 
 #' methods for class 'elephant'
-#' @param x object
-#' @param ... passed to other methods
-#' @param e1 object
-#' @param e2 object
+#' @inheritParams base::groupGeneric
 #' @rdname elephant_methods
 #' @export
 Math.elephant <- function(x, ...){
@@ -15,15 +12,24 @@ Math.elephant <- function(x, ...){
 
 #' @rdname elephant_methods
 #' @export
-Ops.elephant <- Math.elephant
+Ops.elephant <- function(e1, e2){
+  e1 <- forget(e1)
+  e2 <- forget(e2)
+  NextMethod()
+}
+#' @rdname elephant_methods
+#' @export
+Complex.elephant <- function(z){
+  z <- forget(z)
+  NextMethod()
+}
 
 #' @rdname elephant_methods
 #' @export
-Complex.elephant <- Math.elephant
-
-#' @rdname elephant_methods
-#' @export
-Summary.elephant <- Math.elephant
+Summary.elephant <- function (x, ..., na.rm = FALSE){
+  x <- forget(x)
+  NextMethod()
+}
 
 #' @rdname elephant_methods
 #' @export
