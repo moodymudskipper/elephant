@@ -93,3 +93,29 @@ about (use `:=` to define this one as well)
 This way you might not need to clutter your code outside of the area where you spotted
 an unexpected behavior, apart from the `:=` which is easy to replace with `<-` once
 your function works as expected.
+
+
+## Benchmark
+
+`:=` has a small overhead, it shouldn't slow your code much most of the time:
+
+```{r}
+bench::mark(
+  elephant_assignment = (foo := x + sqrt(z) + bar), 
+  standard_assignment = (foo <- x + sqrt(z) + bar), 
+  check = FALSE)
+```
+
+However it wouldn't not be well advised, nor really that useful, to use it in
+a loop growing an object as below.
+
+```{r}
+x := 1
+for (i in 1:4) {
+  x:= x + 1
+}
+x
+```
+
+It's especially true for bigger objects as we'd be keeping in memory all previous values
+that would have been flushed by the garbage collector if we hadn't used *elephant*.

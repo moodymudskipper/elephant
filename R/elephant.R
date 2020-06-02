@@ -33,14 +33,31 @@ print.elephant <- function(x, ..., print.value = TRUE) {
   invisible(x)
 }
 
-rec_print <- function(x, indent = 0){
-  deparsed <- deparse(attr(x, "elephant"))
+rec_print <- function(x, nm = NULL, indent = 0){
+  if(is.elephant(x))
+    deparsed <- deparse(attr(x, "elephant"))
+  else
+    deparsed <- nm
   # deal with `{` calls
   deparsed <- gsub("^[ ]+([^ ]*)$","\\1;", deparsed)
-  cat(strrep(" ", indent), deparsed,"\n")
-  if(length(attr(x, "calves")))
-    lapply(attr(x, "calves"), rec_print, indent + 2)
+  attrs <- attr(x, "calves")
+  cat(strrep(" ", indent), deparsed, "#", short_summary(x), "\n")
+  if(length(attrs))
+    Map(rec_print, attrs, names(attrs), MoreArgs = list(indent = indent + 2))
   invisible()
+}
+
+short_summary <- function(x){
+  out <- paste(setdiff(class(x), "elephant"), collapse= " ")
+  if(!is.null(d <- dim(x)))
+    out <- paste0(out,", dim: ",paste(d, collapse="x"))
+  else if(!is.null(l <- length(x))) {
+    if(l == 1)
+      out <- paste0(out,", value: ",x)
+    else
+      out <- paste0(out,", length: ",l)
+  }
+  out
 }
 
 #' Create elephant object
@@ -57,15 +74,34 @@ rec_print <- function(x, indent = 0){
 `:=` <- function(x, value) {
   x_sym <- substitute(x)
   expr <- substitute(x <- value)
-  x <- value
+  elephant_vars <- Filter(exists, all.vars(expr[[3]]))
+  calves <- mget(elephant_vars,envir = parent.frame(), inherits = TRUE)
+  # calves <- Filter(is.elephant, calves)
+  tryCatch(x <- value, error = function(e) {
+    message("Elephant was killed in ", x_sym, " := ", deparse(expr[[3]]),"\n",
+            "Use poach() to collect its memory")
+    x <- NA
+    class(x) <-  union("elephant", class(x))
+    attr(x, "elephant") <- expr
+    attr(x, "calves") <- calves
+    globals$poached <- x
+    stop(e)
+  })
   class(x) <-  union("elephant", class(x))
   attr(x, "elephant") <- expr
-  elephant_vars <- Filter(exists, all.vars(expr[[3]]))
-  attr(x, "calves") <- Filter(
-    is.elephant, mget(elephant_vars,envir = parent.frame(), inherits = TRUE))
+  attr(x, "calves") <- calves
   assign(as.character(x_sym), x, envir = parent.frame())
   invisible(x)
 }
+
+globals <- new.env()
+
+#' Retrieve a killed elephant's memories
+#' @export
+poach <- function() {
+  globals$poached
+}
+
 
 #' calves
 #'
@@ -109,3 +145,13 @@ calf <- function(x, ...) {
     do.call("calf", c(list(x=out), list(...)[-1]))
   }
 }
+
+
+
+#
+# test <- function(){
+#   tryCatch(stop("a"), finally = print("s**t happens!"))
+#   print("b")
+# }
+# test()
+#
