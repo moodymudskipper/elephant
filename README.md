@@ -36,26 +36,27 @@ foo := x + sqrt(z) + bar
 
 x
 #> [1] 2
-#>  x <- x * 2 
-#>    x <- 1
+#>  x <- x * 2 # numeric, value: 2 
+#>    x <- 1 # numeric, value: 1
 y
 #> [1] 3
-#>  y <- 3
+#>  y <- 3 # numeric, value: 3
 z
 #> [1] 4
-#>  z <- x + y 
-#>    x <- 1 
-#>    y <- 3
+#>  z <- x + y # numeric, value: 4 
+#>    x <- 1 # numeric, value: 1 
+#>    y <- 3 # numeric, value: 3
 bar
 #> [1] 9
 foo
 #> [1] 13
-#>  foo <- x + sqrt(z) + bar 
-#>    x <- x * 2 
-#>      x <- 1 
-#>    z <- x + y 
-#>      x <- 1 
-#>      y <- 3
+#>  foo <- x + sqrt(z) + bar # numeric, value: 13 
+#>    x <- x * 2 # numeric, value: 2 
+#>      x <- 1 # numeric, value: 1 
+#>    z <- x + y # numeric, value: 4 
+#>      x <- 1 # numeric, value: 1 
+#>      y <- 3 # numeric, value: 3 
+#>    bar # numeric, value: 9
 ```
 
 Here we see `bar` is not an elephant object because it doesn’t use `:=`
@@ -69,16 +70,16 @@ advised to do either `baz := x` or `baz <- forget(x)`
 baz <- x
 baz
 #> [1] 2
-#>  x <- x * 2 
-#>    x <- 1
+#>  x <- x * 2 # numeric, value: 2 
+#>    x <- 1 # numeric, value: 1
 
 # good
 baz := x
 baz
 #> [1] 2
-#>  baz <- x 
-#>    x <- x * 2 
-#>      x <- 1
+#>  baz <- x # numeric, value: 2 
+#>    x <- x * 2 # numeric, value: 2 
+#>      x <- 1 # numeric, value: 1
 
 # good
 baz <- forget(x)
@@ -93,40 +94,109 @@ We can access the variables used to compute our elephant object by using
 list_calves(foo)
 #> $x
 #> [1] 2
-#>  x <- x * 2 
-#>    x <- 1 
+#>  x <- x * 2 # numeric, value: 2 
+#>    x <- 1 # numeric, value: 1 
 #> 
 #> $z
 #> [1] 4
-#>  z <- x + y 
-#>    x <- 1 
-#>    y <- 3
+#>  z <- x + y # numeric, value: 4 
+#>    x <- 1 # numeric, value: 1 
+#>    y <- 3 # numeric, value: 3 
+#> 
+#> $bar
+#> [1] 9
 list_calves(foo, "z")
 #> $x
 #> [1] 1
-#>  x <- 1 
+#>  x <- 1 # numeric, value: 1 
 #> 
 #> $y
 #> [1] 3
-#>  y <- 3
+#>  y <- 3 # numeric, value: 3
 calf(foo, "z")
 #> [1] 4
-#>  z <- x + y 
-#>    x <- 1 
-#>    y <- 3
+#>  z <- x + y # numeric, value: 4 
+#>    x <- 1 # numeric, value: 1 
+#>    y <- 3 # numeric, value: 3
 calf(foo, "z", "x")
 #> [1] 1
-#>  x <- 1
+#>  x <- 1 # numeric, value: 1
 ```
 
 ## Debugging with *elephant*
 
-  - Use `:=` in the expressions you want to keep track of
-  - Add a `browser()` call right after the definition of the object
-    you’re unsure about (use `:=` to define this one as well)
-  - Call your function and inspect the object with `calf()` or
-    `list_calves()`
+If an elephant calls fails, its memory is preserved and can be recovered
+using `poach()`, see the example below :
 
-This way you might not need to clutter your code outside of the area
-where you spotted an unexpected behavior, apart from the `:=` which is
-easy to replace with `<-` once your function works as expected.
+``` r
+
+test <- function(){
+  x := 1
+  y := 3
+  z := x * 2
+  bar <- x + y + z
+  foo := x + sqrt(z) + bar * "a" # <- problematic call!
+}
+
+test()
+#> Elephant was killed in foo := x + sqrt(z) + bar * "a"
+#> Use poach() to collect its memory
+#> Error in bar * "a": non-numeric argument to binary operator
+
+poach()
+#> [1] NA
+#>  foo <- x + sqrt(z) + bar * "a" # logical, value: NA 
+#>    x <- 1 # numeric, value: 1 
+#>    z <- x * 2 # numeric, value: 2 
+#>      x <- 1 # numeric, value: 1 
+#>    bar # numeric, value: 6
+
+# extract the bar variable as used by foo, for further investigation
+foo_poached <- poach()
+bar <- calf(foo_poached, "bar")
+bar
+#> [1] 6
+
+# we can go deeper
+calf(foo_poached, "z", "x")
+#> [1] 1
+#>  x <- 1 # numeric, value: 1
+```
+
+## Benchmark
+
+`:=` has a small overhead, it shouldn’t slow your code much most of the
+time:
+
+``` r
+bench::mark(
+  elephant_assignment = (foo := x + sqrt(z) + bar), 
+  standard_assignment = (foo <- x + sqrt(z) + bar), 
+  check = FALSE)
+#> # A tibble: 2 x 6
+#>   expression               min   median `itr/sec` mem_alloc `gc/sec`
+#>   <bch:expr>          <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+#> 1 elephant_assignment   60.6us   71.7us    13168.        0B     16.5
+#> 2 standard_assignment     28us     33us    28670.        0B     20.1
+```
+
+However it wouldn’t not be well advised, nor really that useful, to use
+it in a loop growing an object as below.
+
+``` r
+x := 1
+for (i in 1:4) {
+  x:= x + 1
+}
+x
+#> [1] 5
+#>  x <- x + 1 # numeric, value: 5 
+#>    x <- x + 1 # numeric, value: 4 
+#>      x <- x + 1 # numeric, value: 3 
+#>        x <- x + 1 # numeric, value: 2 
+#>          x <- 1 # numeric, value: 1
+```
+
+It’s especially true for bigger objects as we’d be keeping in memory all
+previous values that would have been flushed by the garbage collector if
+we hadn’t used *elephant*.

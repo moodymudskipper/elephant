@@ -85,15 +85,31 @@ calf(foo, "z", "x")
 
 ## Debugging with *elephant*
 
-* Use `:=` in the expressions you want to keep track of
-* Add a `browser()` call right after the definition of the object you're unsure
-about (use `:=` to define this one as well)
-* Call your function and inspect the object with `calf()` or `list_calves()`
+If an elephant calls fails, its memory is preserved and can be recovered using
+`poach()`, see the example below :
 
-This way you might not need to clutter your code outside of the area where you spotted
-an unexpected behavior, apart from the `:=` which is easy to replace with `<-` once
-your function works as expected.
+```{r, error = TRUE}
 
+test <- function(){
+  x := 1
+  y := 3
+  z := x * 2
+  bar <- x + y + z
+  foo := x + sqrt(z) + bar * "a" # <- problematic call!
+}
+
+test()
+
+poach()
+
+# extract the bar variable as used by foo, for further investigation
+foo_poached <- poach()
+bar <- calf(foo_poached, "bar")
+bar
+
+# we can go deeper
+calf(foo_poached, "z", "x")
+```
 
 ## Benchmark
 
