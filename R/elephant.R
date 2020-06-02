@@ -25,6 +25,7 @@ forget <- function(x) {
 #'
 #' Print elephant object.
 #' @inheritParams base::print
+#' @param print.value if `FALSE` only the elephant's memory is printed.
 #'
 #' @export
 print.elephant <- function(x, ..., print.value = TRUE) {
@@ -74,8 +75,9 @@ short_summary <- function(x){
 `:=` <- function(x, value) {
   x_sym <- substitute(x)
   expr <- substitute(x <- value)
-  elephant_vars <- Filter(exists, all.vars(expr[[3]]))
-  calves <- mget(elephant_vars,envir = parent.frame(), inherits = TRUE)
+  pf <- parent.frame()
+  elephant_vars <- Filter(function(x) exists(x, envir = pf), all.vars(expr[[3]]))
+  calves <- mget(elephant_vars,envir = pf, inherits = TRUE)
   # calves <- Filter(is.elephant, calves)
   tryCatch(x <- value, error = function(e) {
     message("Elephant was killed in ", x_sym, " := ", deparse(expr[[3]]),"\n",
@@ -90,7 +92,7 @@ short_summary <- function(x){
   class(x) <-  union("elephant", class(x))
   attr(x, "elephant") <- expr
   attr(x, "calves") <- calves
-  assign(as.character(x_sym), x, envir = parent.frame())
+  assign(as.character(x_sym), x, envir = pf)
   invisible(x)
 }
 
